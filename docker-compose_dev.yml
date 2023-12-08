@@ -1,0 +1,25 @@
+version: '3'
+services:
+
+  redis:
+    image: redis:7.2.0-alpine
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+
+  auth_db:
+    image: postgres:13
+    restart: always
+    env_file:
+      - .env_auth
+    expose:
+      - "${POSTGRES_PORT:-5432}"
+    volumes:
+      - auth_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+
+volumes:
+  auth_db:

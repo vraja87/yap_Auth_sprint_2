@@ -1,0 +1,41 @@
+version: '3'
+services:
+
+  auth:
+    build: .
+    restart: always
+    depends_on:
+      - auth_db
+      - redis
+    expose:
+      - "8000"
+    env_file:
+      - ../.env_auth
+
+
+  auth_db:
+    image: postgres:13
+    restart: always
+    env_file:
+      - ../.env_auth
+    expose:
+      - "${POSTGRES_PORT:-5432}"
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile_tests
+    entrypoint: >
+      sh -c " python3 ./src/tests/functional/utils/wait_for_db.py
+      && python3 ./src/tests/functional/utils/wait_for_redis.py
+      && python3 ./src/tests/functional/utils/wait_for_service.py
+      && pytest ./src/tests --capture=no"
+    depends_on:
+     - auth
+    env_file:
+      - ../.env_auth
+
+  redis:
+    image: redis:7.2.0-alpine
+    expose:
+      - "6379"

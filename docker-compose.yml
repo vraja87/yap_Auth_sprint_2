@@ -1,0 +1,114 @@
+version: '3'
+services:
+  admin_db:
+    image: postgres:13
+    restart: always
+    env_file:
+      - .env
+    expose:
+      - "${POSTGRES_PORT:-5432}"
+    volumes:
+      - admin_db_data:/var/lib/postgresql/data
+
+  auth_db:
+    image: postgres:13
+    restart: always
+    env_file:
+      - .env_auth
+    expose:
+      - "${POSTGRES_PORT:-5432}"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+  admin_panel:
+    build: admin_panel
+    restart: always
+    depends_on:
+      - admin_db
+    expose:
+      - "8000"
+    env_file:
+      - .env
+    volumes:
+      - admin_static_volume:/opt/app/static/
+      - admin_media_volume:/opt/app/media/
+
+  data_generator:
+    build: data_generator
+    depends_on:
+      - admin_db
+      - admin_panel
+    env_file:
+      - .env
+    entrypoint: ["sleep", "infinity"]
+
+  redis:
+    image: redis:7.2.0-alpine
+    expose:
+      - "6379"
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs:/etc/nginx/conf.d:ro
+      - admin_static_volume:/opt/app/static/
+      - admin_media_volume:/opt/app/media/
+    depends_on:
+      - admin_panel
+      - movies-api
+      - auth-api
+    restart: always
+    ports:
+      - "80:80"
+
+  elasticsearch:
+    image: elasticsearch:8.9.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms200m -Xmx200m
+    restart: always
+    expose:
+      - "9200"
+    depends_on:
+      - admin_panel
+      - admin_db
+
+  etl:
+    build: etl
+    env_file:
+    - .env
+    restart: always
+    depends_on:
+      - elasticsearch
+
+  movies-api:
+    build: fastapi
+    restart: always
+    depends_on:
+      - elasticsearch
+      - redis
+      - etl
+    expose:
+      - "8000"
+    env_file:
+      - .env
+
+  auth-api:
+    build: auth
+    restart: always
+    depends_on:
+      - redis
+      - auth_db
+    expose:
+      - "8000"
+    env_file:
+      - .env_auth
+
+
+volumes:
+  admin_db_data:
+  auth_db_data:
+  admin_static_volume:
+  admin_media_volume:

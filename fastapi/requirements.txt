@@ -1,0 +1,11 @@
+backoff==2.2.1
+redis==5.0.0
+elasticsearch[async]==8.9.0
+fastapi==0.101.1
+orjson==3.9.5
+pydantic==2.2.0
+pydantic_settings==2.0.3
+uvicorn==0.23.2
+gunicorn==21.2.0
+uvloop==0.17.0 ; sys_platform != "win32" and implementation_name == "cpython"
+loguru==0.7.0

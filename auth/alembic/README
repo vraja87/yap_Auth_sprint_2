@@ -1,0 +1,24 @@
+Generic single-database configuration with an async dbapi.
+
+commands:
+
+init alembic:
+    alembic init -t async alembic
+
+first migration:
+    alembic revision --autogenerate -m 'first migration after db creation'
+
+look current state:
+    alembic current
+
+upgrade to the last migration:
+    alembic upgrade head
+
+last step to the empty db:
+    alembic downgrade -1
+
+syntax examples:
+    alembic upgrade ae1 - измеить миграцию где ae1 это начало хэша миграции
+    alembic upgrade +2
+    alembic downgrade -1
+    alembic upgrade ae10+2

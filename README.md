@@ -1,23 +1,76 @@
-# Проектная работа 7 спринта
+# Async API
 
-1. Создайте интеграцию Auth-сервиса с сервисом выдачи контента и панелью администратора Django, используя контракт, который вы сделали в прошлом задании.
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue.svg)](https://github.com/telemachor/Auth_sprint_1)
   
-    При создании интеграции не забудьте учесть изящную деградацию Auth-сервиса. Как вы уже выяснили ранее, Auth сервис один из самых нагруженных, потому что в него ходят большинство сервисов сайта. И если он откажет, сайт отказать не должен. Обязательно учтите этот сценарий в интеграциях с Auth-сервисом.
-2. Добавьте в Auth трасировку и подключите к Jaeger. Для этого вам нужно добавить работу с заголовком x-request-id и отправку трасировок в Jaeger.
-3. Добавьте в сервис механизм ограничения количества запросов к серверу.
-4. Упростите регистрацию и аутентификацию пользователей в Auth-сервисе, добавив вход через социальные сервисы. Список сервисов выбирайте исходя из целевой аудитории онлайн-кинотеатра — подумайте, какими социальными сервисами они пользуются. Например, использовать [OAuth от Github](https://docs.github.com/en/free-pro-team@latest/developers/apps/authorizing-oauth-apps){target="_blank"} — не самая удачная идея. Ваши пользователи не разработчики и вряд ли имеют аккаунт на Github. А вот добавить VK, Google, Yandex или Mail будет хорошей идеей.
+## Setup
+  
+- Create and fill out a `.env` using `.env.example`.
+- **Start Docker Containers**: Simply run the `make` command to start all necessary containers and initialize the project:
+  - Build and start all Docker services defined in `docker-compose.yaml`.
+  - Apply database migrations to set up your database schema.
+  - Collect static files for the admin panel.
+  - Create a superuser for admin access.
+  - Generate initial data for the application (e.g., sample movies, genres, etc.).
 
-    Вам не нужно делать фронтенд в этой задаче и реализовывать собственный сервер OAuth. Нужно реализовать протокол со стороны потребителя.
-    
-    Информация по OAuth у разных поставщиков данных: 
-    
-    - [Yandex](https://yandex.ru/dev/oauth/?turbo=true){target="_blank"},
-    - [VK](https://vk.com/dev/access_token){target="_blank"},
-    - [Google](https://developers.google.com/identity/protocols/oauth2){target="_blank"},
-    - [Mail](https://api.mail.ru/docs/guides/oauth/){target="_blank"}.
-    
-## Дополнительное задание
-    
-Реализуйте возможность открепить аккаунт в соцсети от личного кабинета. 
-    
-Решение залейте в репозиторий текущего спринта и отправьте на ревью.
+## Description
+This project provides an admin panel and API for searching and retrieving information about movies, genres, and persons. 
+
+You can filter movies based on various parameters such as genre, IMDb rating, and sorting. Pagination is also supported for easy viewing of large data sets.
+
+# Usage Guide
+
+The Makefile provides a set of commands to manage and interact with project using Docker Compose.  Here's how you can use them:
+
+#### Base Makefile Commands
+
+| Command          | Description                                                                          |
+|------------------|--------------------------------------------------------------------------------------|
+| `make`           | Initialize the project (start, migrations, create superuser, data generation, etc.). |
+| `make up`        | Start all Docker containers in the background.                                       |
+| `make down`      | Stop all Docker containers.                                                          |
+| `make hard_down` | Remove all Docker containers and networks. Deletes initialization flag.              |
+| `make migrate`   | Apply database migrations.                                                           |
+
+#### Running Tests
+
+To run functional tests, execute the following command:
+
+```bash
+make test
+```
+
+
+#### Content interaction
+
+> For more details on the API, refer to the Swagger documentation at `/api/openapi-movies`
+
+- **GET /api/v1/films/**: Retrieve a list of films with the option to filter by genre, IMDb rating, etc.
+- **GET /api/v1/films/search/**: Search for films with optional filtering and "soft" search.
+- **GET /api/v1/films/{film_id}**: Retrieve detailed information about a film by its ID.
+- **GET /api/v1/genres/**: Retrieve a list of all genres.
+- **GET /api/v1/persons/search/**: Search for persons by name with optional "soft" search.
+
+
+### Role Management
+
+> For more details on the API, refer to the Swagger documentation at `/api/openapi-auth`
+
+- **POST /api/v1/roles/create**: Creates a new role.
+- **DELETE /api/v1/roles/delete/{role_id}**: Deletes a role based on its UUID.
+- **GET /api/v1/roles/**: Retrieves a list of all roles.
+- **GET /api/v1/roles/{role_id}**: Fetches details of a role by its UUID.
+- **GET /api/v1/roles/{role_name}/name**: Fetches details of a role by its name.
+- **GET /api/v1/roles/user/{user_id}**: Returns the roles assigned to a user.
+- **POST /api/v1/roles/assign**: Assigns a role to a user.
+- **DELETE /api/v1/roles/detach**: Detaches a role from a user.
+
+### User Management
+
+- **POST /api/v1/users/signup**: Registers a new user.
+- **POST /api/v1/users/login**: Authenticates a user and provides access tokens.
+- **POST /api/v1/users/logout**: Logs out a user from the current session.
+- **POST /api/v1/users/logout_all**: Logs out a user from all sessions.
+- **POST /api/v1/users/refresh**: Refreshes a user's tokens.
+- **GET /api/v1/users/login-history**: Retrieves a user's login history.
+- **PATCH /api/v1/users/update**: Updates user information.
+- **GET /api/v1/users/access-roles**: Retrieves the roles of the current user.
