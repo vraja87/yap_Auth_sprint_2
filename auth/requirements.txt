@@ -26,3 +26,9 @@ user_agents==2.2.0
 fastapi_users==12.1.2
 apscheduler
 gunicorn==21.2.0
+
+#for jaeger
+opentelemetry-api==1.17.0
+opentelemetry-sdk==1.17.0
+opentelemetry-instrumentation-fastapi==0.38b0
+opentelemetry-exporter-jaeger==1.17.0
