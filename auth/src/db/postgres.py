@@ -1,5 +1,5 @@
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import DDL, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 

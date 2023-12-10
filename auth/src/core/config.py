@@ -99,8 +99,6 @@ class DbConf(BaseSettings):
 class FastApiConf(BaseSettings):
     """
     Configuration settings for the FastAPI application.
-
-    :param name: The name of the FastAPI application.
     """
     model_config = SettingsConfigDict(env_file=env_file, env_prefix='PROJECT_')
 
@@ -126,3 +124,26 @@ class FastApiConf(BaseSettings):
 @lru_cache()
 def get_config() -> FastApiConf:
     return FastApiConf()
+
+
+class RateLimitConfig(BaseSettings):
+    """
+    Configuration settings for the RateLimit service.
+    """
+    model_config = SettingsConfigDict(env_file=env_file, env_prefix='RATE_LIMIT_')
+
+    is_on: bool = True
+    times: int = 40
+    times_anonymous: int = 10
+    seconds: int = 60
+
+    def __hash__(self):
+        return hash((self.is_on,
+                     self.times,
+                     self.times_anonymous,
+                     self.seconds))
+
+
+@lru_cache()
+def get_rate_limit_config() -> RateLimitConfig:
+    return RateLimitConfig()
