@@ -96,6 +96,13 @@ class DbConf(BaseSettings):
     port: str = '5432'
 
 
+class JaegerConf(BaseSettings):
+    model_config = SettingsConfigDict(env_file=env_file, env_prefix='JAEGER_')
+
+    host: str = 'auth_jaeger'
+    port: int = 6831
+
+
 class FastApiConf(BaseSettings):
     """
     Configuration settings for the FastAPI application.
@@ -114,6 +121,8 @@ class FastApiConf(BaseSettings):
     access_token_ttl: int = 60 * 30
     refresh_token_ttl: int = 60 * 60 * 24 * 2
     clear_expired_token_frequency: int = 60 * 60 * 12
+
+    jaeger: JaegerConf = JaegerConf()
 
     def __hash__(self):
         return hash((self.name,

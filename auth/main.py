@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.api.v1 import roles, user
@@ -17,16 +18,18 @@ from starlette.requests import Request
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import ORJSONResponse
 
+from src.utils.jaeger import configure_tracer
+
 fast_api_conf = config.get_config()
 
 
+configure_tracer(fast_api_conf.jaeger.host, fast_api_conf.jaeger.port)
 app = FastAPI(
     title=fast_api_conf.name,
     docs_url='/api/openapi-auth',
     openapi_url='/api/openapi-auth.json',
     default_response_class=ORJSONResponse,
 )
-
 
 
 scheduler = AsyncIOScheduler()
@@ -93,6 +96,22 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
         status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         detail=str(exc)
     )
+
+
+@app.middleware('http')
+async def before_request(request: Request, call_next):
+    """Жёстко отсеиваем любые запросы в которых отсутствует поле с заголовком """
+
+    response = await call_next(request)
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        return ORJSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content={'detail': 'X-Request-Id is required'}
+        )
+    return response
+
+FastAPIInstrumentor.instrument_app(app)
 
 
 app.include_router(user.router, prefix='/api/v1/user', tags=['user'])

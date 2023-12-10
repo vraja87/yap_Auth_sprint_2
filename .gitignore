@@ -136,3 +136,4 @@ dmypy.json
 .python-version
 .idea
 *.uuid
+/.init_completed
