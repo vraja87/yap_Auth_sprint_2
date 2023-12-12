@@ -15,7 +15,7 @@ COPY . .
 ENTRYPOINT [ "sh", "-c", "\
     if [ \"$PROJECT_IS_DEV_MODE\" = 1 ]; \
     then \
-        python create_admin.py && uvicorn main:app --host 0.0.0.0 --port 8000; \
+        alembic upgrade head && python create_admin.py && uvicorn main:app --host 0.0.0.0 --port 8000; \
     else \
         alembic upgrade head && python create_admin.py && gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app; \
     fi" ]

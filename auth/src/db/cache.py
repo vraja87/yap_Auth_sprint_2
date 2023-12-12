@@ -3,6 +3,7 @@ from typing import Any
 
 import backoff
 from redis.asyncio import ConnectionError, Redis
+
 from src.core.logger import LoggerAdapter, logger
 
 

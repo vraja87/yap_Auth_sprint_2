@@ -1,5 +1,5 @@
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import DDL, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -37,7 +37,6 @@ async def create_admin_user_if_not_exist(db: AsyncSession, login: str, password:
         result = await db.execute(select(User).where(User.login == login))
         admin_user = result.scalars().first()
         admin_role = await create_admin_role_if_not_exist(db)
-
 
         if admin_user is None:
             admin_user = User(login=login, password=password)

@@ -1,11 +1,11 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 
 import src.api.v1.api_examples as api_examples
-from src.api.v1.models.entity import (RoleCreate, RoleNamesResponse,
-                                      RoleResponse, AssignRoleRequest)
+from src.api.v1.models.entity import (AssignRoleRequest, RoleCreate,
+                                      RoleNamesResponse, RoleResponse)
 from src.api.v1.user import get_token
 from src.core.logger import logger
 from src.models.entity import Role
@@ -59,7 +59,7 @@ async def delete_role(role_id: UUID,
             response_model=list[RoleResponse],
             status_code=HTTPStatus.OK,
             summary="List all roles",
-            description = "Retrieves a list of all roles.",
+            description="Retrieves a list of all roles.",
             responses=api_examples.list_roles)
 async def get_all_roles(role_service: RoleService = Depends(get_role_service)) -> list[RoleResponse]:
     """

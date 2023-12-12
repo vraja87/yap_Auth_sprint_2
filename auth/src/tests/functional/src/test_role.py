@@ -1,10 +1,8 @@
-from http import HTTPStatus
 import uuid
+from http import HTTPStatus
 
-import pytest
-
-from src.tests.functional.testdata.common_test_db_data import roles, users
 from src.tests.functional.settings import test_settings
+from src.tests.functional.testdata.common_test_db_data import roles, users
 
 
 async def test_create_role_admin_success(make_post_request_for_login, make_post_request):

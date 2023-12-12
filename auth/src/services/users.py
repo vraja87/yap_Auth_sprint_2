@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from functools import lru_cache
 from http import HTTPStatus
+from uuid import UUID
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import delete, desc, select
@@ -83,6 +84,31 @@ class UserService:
         logger.info(f'Signup login {user.login}')
         return user
 
+    async def complete_authentication(self, user: User, request: Request) -> tuple[str, str]:
+        """
+        Finalizes the authentication process by generating tokens and logging the login history.
+
+        :param user: Authenticated user.
+        :param request: Request object for user agent and IP extraction.
+        :return: Tuple of access token and refresh token.
+        """
+        logger.info(f"User authenticated successfully: {user.id}")
+        user_id, user_agent, ip_address = str(user.id), get_user_agent(request), get_ip_address(request)
+        refresh_token, refresh_record = await self.create_new_refresh_token(user_id, user_agent)
+        await self.create_login_history(user_id=user.id, ip_address=ip_address, user_agent=user_agent)
+
+        try:
+            await self.db.commit()
+            logger.debug(f"Authentication records saved successfully for user: {user.id}")
+        except IntegrityError:
+            logger.error(f"Error saving session for user: {user.id}")
+            await self.db.rollback()
+            raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Error saving session")
+
+        refresh_record_id = str(refresh_record.id)
+        access_token = self.create_access_token(str(user.id), refresh_token_id=refresh_record_id)
+        return access_token, refresh_token
+
     async def authenticate(self, username: str, password: str, request: Request) -> tuple[str, str]:
         """
         Authenticates a user and generates access and refresh tokens.
@@ -94,26 +120,10 @@ class UserService:
         """
         user = await self.get_user_by_username(username)
         if not user or not user.check_password(password):
-            logger.warning(f"Authentication failed for user: {username}")
+            logger.warning(f"Authentication failed for user: {user.id}")
             raise AuthenticationFailedException(status_code=HTTPStatus.UNAUTHORIZED, detail="Wrong login or password")
 
-        logger.info(f"User authenticated successfully: {username}")
-        user_id, user_agent, ip_address = str(user.id), get_user_agent(request), get_ip_address(request)
-
-        refresh_token, refresh_record = await self.create_new_refresh_token(user_id, user_agent)
-        await self.create_login_history(user_id=user.id, ip_address=ip_address, user_agent=user_agent)
-
-        try:
-            await self.db.commit()
-            logger.debug(f"Authentication records saved successfully for user: {username}")
-        except IntegrityError:
-            logger.error(f"Error saving session for user: {username}")
-            self.db.rollback()
-            raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Error saving session")
-
-        refresh_record_id = str(refresh_record.id)
-        access_token = self.create_access_token(str(user.id), refresh_token_id=refresh_record_id)
-        return access_token, refresh_token
+        return await self.complete_authentication(user, request)
 
     async def logout(self, access_token: str):
         """
@@ -238,7 +248,7 @@ class UserService:
 
         return access_token, refresh_token
 
-    async def create_login_history(self, user_id: int, user_agent: str, ip_address: str):
+    async def create_login_history(self, user_id: UUID, user_agent: str, ip_address: str):
         """
         Records a user's login history in the database.
 
@@ -301,7 +311,7 @@ class UserService:
             result = await self.db.execute(query)
         except SQLAlchemyError as e:
             raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def update_user(self, access_token: str, user_update: User):
         """
@@ -326,6 +336,11 @@ class UserService:
             user.first_name = user_update.first_name
         if user_update.last_name is not None:
             user.last_name = user_update.last_name
+        if user_update.email is not None:
+            user.email = user_update.email
+
+        if user_update.login is not None and user.password is not None:
+            user.credentials_updated = True
 
         try:
             await self.db.commit()
@@ -346,7 +361,6 @@ def get_user_service(db_session: AsyncSession = Depends(get_session),
     :param db_session: An asynchronous database session, used for database operations.
     :param cache_service: A cache backend instance, used for caching data to improve performance.
     :param token_service: A token service instance, used for managing authentication tokens.
-    :param role_service: A role service instance, used for managing user roles.
     :param config: Configuration settings for the FastAPI application
     :return: An instance of UserService.
     """

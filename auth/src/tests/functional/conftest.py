@@ -9,6 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.ddl import CreateTable
+
 from src.models.entity import Base
 
 from .settings import test_settings
@@ -127,7 +128,7 @@ async def make_patch_request(http_session: aiohttp.ClientSession):
 
 @pytest_asyncio.fixture
 async def make_delete_request(http_session: aiohttp.ClientSession):
-    async def inner(path: str, query_data: dict | None = None,  headers=None):
+    async def inner(path: str, query_data: dict | None = None, headers=None):
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         async with http_session.delete(url, json=query_data, headers=headers) as response:
