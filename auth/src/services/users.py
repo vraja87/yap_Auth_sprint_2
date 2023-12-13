@@ -83,7 +83,7 @@ class UserService:
         logger.info(f'Signup login {user.login}')
         return user
 
-    async def authenticate(self, username: str, password: str, request: Request) -> tuple[str, str]:
+    async def authenticate(self, username: str, password: str, request: Request) -> tuple[str, str, User]:
         """
         Authenticates a user and generates access and refresh tokens.
 
@@ -113,7 +113,7 @@ class UserService:
 
         refresh_record_id = str(refresh_record.id)
         access_token = self.create_access_token(str(user.id), refresh_token_id=refresh_record_id)
-        return access_token, refresh_token
+        return access_token, refresh_token, user
 
     async def logout(self, access_token: str):
         """

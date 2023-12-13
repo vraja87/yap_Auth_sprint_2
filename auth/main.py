@@ -100,16 +100,14 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
 
 @app.middleware('http')
 async def before_request(request: Request, call_next):
-    """Жёстко отсеиваем любые запросы в которых отсутствует поле с заголовком """
-
-    response = await call_next(request)
+    """strictly filter out any requests that do not have a header field"""
     request_id = request.headers.get('X-Request-Id')
     if not request_id:
         return ORJSONResponse(
             status_code=HTTPStatus.BAD_REQUEST,
             content={'detail': 'X-Request-Id is required'}
         )
-    return response
+    return await call_next(request)
 
 FastAPIInstrumentor.instrument_app(app)
 

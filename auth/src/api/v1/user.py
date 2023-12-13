@@ -11,7 +11,7 @@ from starlette.requests import Request
 import src.api.v1.api_examples as api_examples
 from src.api.v1.models.entity import (LoginHistoryResponse, RoleNamesResponse,
                                       RoleResponse, TwoTokens, UserCreate,
-                                      UserInDB, UserUpdateRequest)
+                                      UserInDB, UserUpdateRequest, LoginResponse)
 from src.core.logger import logger
 from src.db import cache
 from src.models.entity import User
@@ -68,25 +68,36 @@ async def create_user(user: UserCreate, user_service: UserService = Depends(get_
 
 @logger.catch
 @router.post('/login',
-             response_model=TwoTokens,
+             response_model=LoginResponse,
              status_code=HTTPStatus.OK,
              summary="User Login",
              description="Authenticate a user and provide access and refresh tokens.",
              responses=api_examples.login)
 async def login(request: Request,
                 form_data: OAuth2PasswordRequestForm = Depends(),
-                user_service: UserService = Depends(get_user_service)
-                ) -> TwoTokens:
+                user_service: UserService = Depends(get_user_service),
+                role_service: RoleService = Depends(get_role_service)
+                ) -> LoginResponse:
     """
     Authenticates user and returns JWT tokens.
 
     :param request: HTTP request.
     :param form_data: Login credentials.
     :param user_service: User service.
+    :param role_service: Dependency injection of the RoleService.
     :return: Access and refresh JWT tokens.
     """
-    access_token, refresh_token = await user_service.authenticate(form_data.username, form_data.password, request)
-    return TwoTokens(access_token=access_token, refresh_token=refresh_token)
+    access_token, refresh_token, user = await user_service.authenticate(form_data.username, form_data.password, request)
+    user_roles = await role_service.get_roles_by_user_id_query(user.id)
+    user_roles = [role.name for role in user_roles]
+    return LoginResponse(id=user.id,
+                         access_token=access_token,
+                         refresh_token=refresh_token,
+                         login=user.login,
+                         first_name=user.first_name,
+                         last_name=user.last_name,
+                         roles=user_roles
+                         )
 
 
 @router.post('/logout',

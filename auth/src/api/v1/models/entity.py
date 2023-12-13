@@ -84,6 +84,14 @@ class TwoTokens(BaseModel):
         }
 
 
+class LoginResponse(TwoTokens):
+    id: UUID
+    login: str
+    first_name: str | None
+    last_name: str | None
+    roles: list[str]
+
+
 class LoginHistoryResponse(BaseModel):
     user_agent: str
     ip_address: str
