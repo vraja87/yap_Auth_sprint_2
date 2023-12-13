@@ -3,6 +3,13 @@ import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 env_file = '.env' if os.path.exists('.env') else None
+env_auth_file = '.env_auth' if os.path.exists('.env_auth') else None
+
+
+class FastApiConf(BaseSettings):
+    model_config = SettingsConfigDict(env_file=env_auth_file, env_prefix='PROJECT_')
+
+    secret_key: str = 'secret'
 
 
 class TestSettings(BaseSettings):
@@ -16,6 +23,8 @@ class TestSettings(BaseSettings):
     es_indexes: list[str] | None = None
     es_id_field: str = 'uuid'
     service_url: str = 'http://fastapi:8000'
+
+    secret_key: str = FastApiConf().secret_key
 
     def __init__(self, **data):
         super().__init__(**data)
