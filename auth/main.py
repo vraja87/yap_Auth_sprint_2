@@ -1,3 +1,4 @@
+import uuid
 from http import HTTPStatus
 
 import uvicorn
@@ -5,6 +6,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sqlalchemy.exc import SQLAlchemyError
 
+from create_admin import create_admin
 from src.api.v1 import roles, user
 from src.core import config
 from src.core.logger import logger
@@ -19,6 +21,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import ORJSONResponse
 
 from src.utils.jaeger import configure_tracer
+from starlette.datastructures import Headers
 
 fast_api_conf = config.get_config()
 
@@ -45,6 +48,7 @@ async def startup():
 
     if fast_api_conf.is_dev_mode:  # create db with alchemy instead of alembic in dev_mode
         await create_database()
+        await create_admin()
 
     cache_conf = config.CacheConf.read_config()
     logger.info('Startup api service.')
@@ -100,7 +104,9 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
 
 @app.middleware('http')
 async def before_request(request: Request, call_next):
-    """strictly filter out any requests that do not have a header field"""
+    """strictly filter out any requests that do not have a header field
+        """
+    # TODO Have troubles with requests from movies-api swagger documentation.
     request_id = request.headers.get('X-Request-Id')
     if not request_id:
         return ORJSONResponse(

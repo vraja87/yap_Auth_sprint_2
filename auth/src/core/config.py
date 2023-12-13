@@ -113,8 +113,8 @@ class FastApiConf(BaseSettings):
 
     name: str = 'auth'
     secret_key: str = 'secret'
-    admin_login: str = 'admin_auth'
-    admin_passwd: str = 'admin_auth'
+    admin_login: str = 'admin'
+    admin_passwd: str = 'admin'
 
     is_dev_mode: bool = True
 
