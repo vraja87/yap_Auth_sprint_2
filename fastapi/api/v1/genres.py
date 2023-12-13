@@ -6,6 +6,7 @@ from core.logger import logger
 from services.genre import GenreService, get_genre_service
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from utils.check_auth import check_has_token
 
 router = APIRouter()
 
@@ -18,12 +19,15 @@ router = APIRouter()
                         'including its unique identifier and name, based on its unique ID.',
             responses=api_examples.genre,
             )
-async def genre_details(genre_id: str, genre_service: GenreService = Depends(get_genre_service)) -> GenreResponse:
+async def genre_details(genre_id: str,
+                        genre_service: GenreService = Depends(get_genre_service),
+                        has_token: bool = Depends(check_has_token)) -> GenreResponse:
     """
     Fetches the details of a genre by its ID.
 
     :param genre_id: The ID of the genre to retrieve.
     :param genre_service: Dependency that provides access to the genre service.
+    :param has_token: inner check of user authorization
     :return: The genre details in the format of GenreResponse model.
     """
     genre = await genre_service.get_by_id(genre_id)
@@ -44,13 +48,14 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(get
 async def genres_all(genre_service: GenreService = Depends(get_genre_service),
                      page_number: int = Query(0, ge=0, alias='page_number'),
                      page_size: int = Query(100, ge=1, alias='page_size'),
-                     ) -> list[GenreResponse]:
+                     has_token: bool = Depends(check_has_token)) -> list[GenreResponse]:
     """
     Fetches all genres with pagination support.
 
     :param genre_service: Dependency that provides access to the genre service.
     :param page_number: The current page number, starts at 0.
     :param page_size: The number of genres to return per page.
+    :param has_token: inner check of user authorization
     :return: A list of genres in the format of GenreResponse model.
     """
     params = {

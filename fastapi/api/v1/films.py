@@ -11,6 +11,7 @@ from core.logger import logger
 from services.film import FilmService, get_film_service
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from utils.check_auth import check_has_token
 
 router = APIRouter()
 redis_conf = config.RedisConf()
@@ -32,6 +33,7 @@ async def films(genre: list[str] = Query([], min_length=0, max_length=5),
                 page_number: int = Query(0, ge=0, alias='page_number'),
                 page_size: int = Query(100, ge=1, alias='page_size'),
                 film_service: FilmService = Depends(get_film_service),
+                has_token: bool = Depends(check_has_token),
                 ) -> list[FilmResponse]:
     """
     Retrieve a list of films based on various filter parameters.
@@ -44,6 +46,7 @@ async def films(genre: list[str] = Query([], min_length=0, max_length=5),
     :param page_number: Current page number.
     :param page_size: Number of items per page.
     :param film_service: Dependency to access the film service.
+    :param has_token: inner check of user authorization
     :return: A list of films meeting the filter criteria.
     """
 
