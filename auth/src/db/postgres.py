@@ -38,7 +38,6 @@ async def create_admin_user_if_not_exist(db: AsyncSession, login: str, password:
         admin_user = result.scalars().first()
         admin_role = await create_admin_role_if_not_exist(db)
 
-
         if admin_user is None:
             admin_user = User(login=login, password=password)
             db.add(admin_user)

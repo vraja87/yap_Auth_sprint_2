@@ -852,3 +852,118 @@ detach_role = {
         }
     }
 }
+
+login_oauth = {
+    HTTPStatus.FOUND: {
+        "description": "Redirect to the OAuth provider's login page.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "Redirect Example": {
+                        "value": {
+                            "detail": "Redirecting to OAuth provider's login page."
+                        }
+                    }
+                }
+            }
+        }
+    },
+    HTTPStatus.BAD_REQUEST: {
+        "description": "Bad request, possibly due to invalid provider name or errors during redirect.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "Invalid Provider": {
+                        "value": {
+                            "detail": "Invalid OAuth provider specified."
+                        }
+                    },
+                    "Redirect Failed": {
+                        "value": {
+                            "detail": "OAuth redirect failed."
+                        }
+                    }
+                }
+            }
+        }
+    },
+    HTTPStatus.INTERNAL_SERVER_ERROR: {
+        "description": "Internal server error during the OAuth redirect process.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "Server Error on Redirect": {
+                        "value": {
+                            "detail": "Error getting OAuth provider."
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+auth_callback = {
+    HTTPStatus.OK: {
+        "description": "Successful OAuth authentication. Access and refresh tokens are returned.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "Successful Authentication": {
+                        "value": {
+                            "access_token": "example_access_token",
+                            "refresh_token": "example_refresh_token"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    HTTPStatus.BAD_REQUEST: {
+        "description": "Bad request, possibly due to OAuth authorization errors.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "OAuth Error": {
+                        "value": {
+                            "detail": "Error message from OAuthError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    HTTPStatus.INTERNAL_SERVER_ERROR: {
+        "description": "Internal server error during the authentication process.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "Database Error": {
+                        "value": {
+                            "detail": "User creation failed"
+                        }
+                    },
+                    "Server Error on Authentication": {
+                        "value": {
+                            "detail": "Error getting OAuth provider"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    HTTPStatus.UNAUTHORIZED: {
+        "description": "Unauthorized access, possibly due to invalid token or credentials.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "Invalid Credentials": {
+                        "value": {
+                            "detail": "Invalid or expired token provided."
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

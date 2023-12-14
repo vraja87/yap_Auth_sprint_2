@@ -25,6 +25,10 @@ class User(Base):
     password = Column(String(255), nullable=False)
     first_name = Column(String(50), nullable=True)
     last_name = Column(String(50), nullable=True)
+    email = Column(String(255), nullable=True)
+    is_oauth2 = Column(Boolean, default=False)
+    credentials_updated = Column(Boolean, default=True)
+    oauth2 = relationship('OAuth2User', back_populates='user', uselist=False, cascade='all, delete-orphan')
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -33,11 +37,20 @@ class User(Base):
     tokens = relationship('RefreshToken', back_populates='user')
     login_histories = relationship('LoginHistory', back_populates='user')
 
-    def __init__(self, login: str, password: str, first_name: str | None = None, last_name: str | None = None) -> None:
+    def __init__(self, login: str,
+                 password: str,
+                 first_name: str | None = None,
+                 last_name: str | None = None,
+                 email: str | None = None,
+                 is_oauth2: bool = False,
+                 credentials_updated: bool = True) -> None:
         self.login = login
         self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
+        self.email = email
+        self.is_oauth2 = is_oauth2
+        self.credentials_updated = credentials_updated
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
@@ -106,3 +119,20 @@ class LoginHistory(Base):
         self.user_id = user_id
         self.user_agent = user_agent
         self.ip_address = ip_address
+
+
+class OAuth2User(Base):
+    __tablename__ = 'oauth2_users'
+    __table_args__ = {"schema": "content"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    oauth_id = Column(String, nullable=False)
+    provider = Column(String, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('content.users.id', ondelete='CASCADE'), nullable=False)
+
+    user = relationship('User', back_populates='oauth2')
+
+    def __init__(self, oauth_id: str, provider: str, user_id: UUID) -> None:
+        self.oauth_id = oauth_id
+        self.provider = provider
+        self.user_id = user_id

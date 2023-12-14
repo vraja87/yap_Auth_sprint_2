@@ -1,9 +1,8 @@
-
 from http import HTTPStatus
 
 from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Response,
                      Security)
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
                               OAuth2PasswordRequestForm)
 from starlette.requests import Request
@@ -15,6 +14,7 @@ from src.api.v1.models.entity import (LoginHistoryResponse, RoleNamesResponse,
 from src.core.logger import logger
 from src.db.cache import CacheBackend, get_cache
 from src.models.entity import User
+from src.services.oauth import OAuthService, get_oauth_service
 from src.services.rate_limit import rate_limit_dependency
 from src.services.roles import RoleService, get_role_service
 from src.services.users import UserService, get_user_service
@@ -235,3 +235,43 @@ async def get_access_data(access_token: str = Depends(get_token),
     """
     user_roles = await role_service.get_roles_by_access_token(access_token)
     return [RoleNamesResponse(name=role.name) for role in user_roles]
+
+
+@router.get("/login/{provider}",
+            summary="OAuth Login",
+            description="Initiates OAuth login process for a given provider.",
+            responses=api_examples.login_oauth)
+async def login_oauth(request: Request,
+                      provider: str,
+                      oauth_service: OAuthService = Depends(get_oauth_service)) -> RedirectResponse:
+    """
+    Initiates the OAuth login process for the specified provider.
+
+    Redirects the user to the OAuth provider's login page to begin the authentication process.
+
+    :param request: HTTP request context.
+    :param provider: The name of the OAuth provider (e.g., 'google', 'facebook').
+    :param oauth_service: Dependency injection of the OAuth service.
+    :return: A redirect response to the OAuth provider's login page.
+    """
+    return await oauth_service.redirect(request, provider)
+
+
+@router.get("/login/{provider}/callback",
+            response_model=TwoTokens,
+            summary="OAuth Callback",
+            description="Callback endpoint for OAuth login process.",
+            responses=api_examples.auth_callback)
+async def auth_callback(request: Request,
+                        provider: str,
+                        oauth_service: OAuthService = Depends(get_oauth_service)) -> TwoTokens:
+    """
+    Callback endpoint for handling the response from the OAuth provider.
+
+    :param request: HTTP request context.
+    :param provider: The name of the OAuth provider.
+    :param oauth_service: Dependency injection of the OAuth service.
+    :return: TwoTokens model containing the access token and refresh token.
+    """
+    access_token, refresh_token = await oauth_service.authenticate(request, provider)
+    return TwoTokens(access_token=access_token, refresh_token=refresh_token)

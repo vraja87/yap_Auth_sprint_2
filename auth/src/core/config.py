@@ -88,7 +88,15 @@ CacheConf.register_conf('redis', RedisConf)
 class DbConf(BaseSettings):
     model_config = SettingsConfigDict(env_file=env_file,
                                       env_prefix='POSTGRES_')
+    """
+    Configuration settings for the database.
 
+    :param db: Database name.
+    :param user: Database user name.
+    :param password: Database password.
+    :param host: Database host, default is 'auth_db'.
+    :param port: Database port, default is '5432'.
+    """
     db: str
     user: str
     password: str
@@ -97,6 +105,12 @@ class DbConf(BaseSettings):
 
 
 class JaegerConf(BaseSettings):
+    """
+    Configuration settings for Jaeger tracing.
+
+    :param host: Jaeger host, default is 'auth_jaeger'.
+    :param port: Jaeger port, default is 6831.
+    """
     model_config = SettingsConfigDict(env_file=env_file, env_prefix='JAEGER_')
 
     host: str = 'auth_jaeger'
@@ -106,11 +120,23 @@ class JaegerConf(BaseSettings):
 class FastApiConf(BaseSettings):
     """
     Configuration settings for the FastAPI application.
+
+    :param name: Name of the FastAPI application.
+    :param secret_key: Secret key used for cryptographic signing.
+    :param secret_key_session: Secret key used for session management.
+    :param admin_login: Default admin login name.
+    :param admin_passwd: Default admin password.
+    :param is_dev_mode: Flag to indicate if the application is running in development mode.
+    :param access_token_ttl: Time-to-live for access tokens, in seconds.
+    :param refresh_token_ttl: Time-to-live for refresh tokens, in seconds.
+    :param clear_expired_token_frequency: Frequency to clear expired tokens, in seconds.
+    :param jaeger: Configuration settings for Jaeger tracing integration.
     """
     model_config = SettingsConfigDict(env_file=env_file, env_prefix='PROJECT_')
 
     name: str = 'auth'
     secret_key: str = 'secret'
+    secret_key_session: str = 'secret'
     admin_login: str = 'admin'
     admin_passwd: str = 'admin'
 
@@ -130,8 +156,55 @@ class FastApiConf(BaseSettings):
                      self.clear_expired_token_frequency))
 
 
+class YandexOAuthConfig(BaseSettings):
+    """
+    Configuration settings for Yandex OAuth.
+
+    :param client_id: Yandex OAuth client ID.
+    :param client_secret: Yandex OAuth client secret.
+    :param redirect_uri: Redirect URI for Yandex OAuth.
+    :param scope: OAuth scopes, default is 'login:email'.
+    :param authorize_url: URL to initiate authorization, default is Yandex's authorization URL.
+    :param access_token_url: URL to obtain the access token, default is Yandex's token URL.
+    :param api_base_url: Base URL for Yandex API, default is Yandex login API URL.
+    """
+    model_config = SettingsConfigDict(env_file=env_file, env_prefix='YANDEX_')
+
+    client_id: str
+    client_secret: str
+    redirect_uri: str
+    scope: str = 'login:email'
+    authorize_url: str = 'https://oauth.yandex.ru/authorize'
+    access_token_url: str = 'https://oauth.yandex.ru/token'
+    api_base_url: str = 'https://login.yandex.ru/'
+
+
+class GoogleOAuthConfig(BaseSettings):
+    """
+    Configuration settings for Google OAuth.
+
+    :param client_id: Google OAuth client ID.
+    :param client_secret: Google OAuth client secret.
+    :param redirect_uri: Redirect URI for Google OAuth.
+    :param scope: OAuth scopes, default is 'openid email'.
+    :param server_metadata_url: URL for the OpenID Connect discovery document.
+    """
+    model_config = SettingsConfigDict(env_file=env_file, env_prefix='GOOGLE_')
+
+    client_id: str
+    client_secret: str
+    redirect_uri: str
+    scope: str = 'openid email'
+    server_metadata_url: str = 'https://accounts.google.com/.well-known/openid-configuration'
+
+
 @lru_cache()
 def get_config() -> FastApiConf:
+    """
+    Caches and returns the FastAPI application configuration.
+
+    :return: An instance of FastApiConf with the application configuration.
+    """
     return FastApiConf()
 
 
