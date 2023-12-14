@@ -10,10 +10,11 @@ from src.core import config
 from src.core.logger import logger
 from src.db import cache
 from src.db.cache import CacheBackendFactory, CacheClientInitializer
-from src.db.postgres import create_database, db_conf
+from src.db.postgres import create_database
 import src.services.utils as utils_service
 from src.services.utils import TokenCleaner
 from starlette.requests import Request
+
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import ORJSONResponse
@@ -77,8 +78,11 @@ async def shutdown():
     scheduler.shutdown()
 
 
+from src.services.rate_limit import rate_limit_dependency
+from fastapi import Depends
+
 @app.get("/health")
-async def health_check():
+async def health_check(rate_limit=Depends(rate_limit_dependency)):
     """healthcheck for service"""
     return {"status": "ok"}
 
