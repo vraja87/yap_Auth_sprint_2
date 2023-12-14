@@ -28,6 +28,20 @@ DEBUG = os.environ.get('DEBUG', False) == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(' ')
 
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
 
 # Application definition
 
@@ -76,6 +90,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "movies.User"
+AUTHENTICATION_BACKENDS = [
+    'users.auth.CustomBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
+]
 
 LANGUAGE_CODE = 'ru-RU'
 

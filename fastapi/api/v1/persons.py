@@ -6,6 +6,7 @@ from api.v1.models.person import PersonResponse
 from core.logger import logger
 from services.film import FilmService, get_film_service
 from services.person import PersonService, get_person_service
+from utils.check_auth import check_has_token
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -23,13 +24,15 @@ router = APIRouter()
 async def person_details(
         person_id: str,
         person_service: PersonService = Depends(get_person_service),
-        film_service: FilmService = Depends(get_film_service)) -> PersonResponse:
+        film_service: FilmService = Depends(get_film_service),
+        has_token: bool = Depends(check_has_token)) -> PersonResponse:
     """
     Fetch detailed information about a person by their ID.
 
     :param person_id: Unique identifier of the person.
     :param person_service: Dependency that provides access to the person service.
     :param film_service: Dependency that provides access to the film service.
+    :param has_token: inner check of user authorization
     :return: A PersonResponse object containing detailed information about the person.
     """
     person = await person_service.get_by_id(person_id)
@@ -59,13 +62,15 @@ async def person_details(
             )
 async def persons_films(person_id: str,
                         person_service: PersonService = Depends(get_person_service),
-                        film_service: FilmService = Depends(get_film_service)) -> list[FilmResponse]:
+                        film_service: FilmService = Depends(get_film_service),
+                        has_token: bool = Depends(check_has_token)) -> list[FilmResponse]:
     """
     Fetch a list of films in which a person has participated, based on their ID.
 
     :param person_id: Unique identifier of the person.
     :param person_service: Dependency that provides access to the person service.
     :param film_service: Dependency that provides access to the film service.
+    :param has_token: inner check of user authorization
     :return: A list of FilmResponse objects, each containing information about a film.
     """
 
@@ -95,7 +100,8 @@ async def persons_search(
         page_number: int = Query(0, ge=0, alias='page_number'),
         page_size: int = Query(100, ge=1, alias='page_size'),
         person_service: PersonService = Depends(get_person_service),
-        film_service: FilmService = Depends(get_film_service)) -> list[PersonResponse]:
+        film_service: FilmService = Depends(get_film_service),
+        has_token: bool = Depends(check_has_token)) -> list[PersonResponse]:
     """
     Search for persons by their full names with optional fuzzy matching and pagination.
 
@@ -105,6 +111,7 @@ async def persons_search(
     :param page_size: Number of results per page.
     :param person_service: Dependency that provides access to the person service.
     :param film_service: Dependency that provides access to the film service.
+    :param has_token: inner check of user authorization
     :return: A list of PersonResponse objects, each containing information about a person.
     """
     params = {

@@ -3,11 +3,8 @@ from functools import lru_cache
 from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
 from sqlalchemy import delete, desc, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from starlette.requests import Request
-
 from src.core.config import FastApiConf, get_config
 from src.core.logger import logger
 from src.db.cache import CacheBackend, get_cache
@@ -15,6 +12,9 @@ from src.db.postgres import AsyncSession, get_session
 from src.models.entity import LoginHistory, RefreshToken, User
 from src.services.token import TokenService, get_token_service
 from src.services.utils import calculate_ttl, get_ip_address, get_user_agent
+from starlette.requests import Request
+
+from fastapi import Depends, HTTPException
 
 
 class UserAlreadyExistsException(HTTPException):
@@ -84,7 +84,7 @@ class UserService:
         logger.info(f'Signup login {user.login}')
         return user
 
-    async def complete_authentication(self, user: User, request: Request) -> tuple[str, str]:
+    async def complete_authentication(self, user: User, request: Request) -> tuple[str, str, User]:
         """
         Finalizes the authentication process by generating tokens and logging the login history.
 
@@ -107,9 +107,9 @@ class UserService:
 
         refresh_record_id = str(refresh_record.id)
         access_token = self.create_access_token(str(user.id), refresh_token_id=refresh_record_id)
-        return access_token, refresh_token
+        return access_token, refresh_token, user
 
-    async def authenticate(self, username: str, password: str, request: Request) -> tuple[str, str]:
+    async def authenticate(self, username: str, password: str, request: Request) -> tuple[str, str, User]:
         """
         Authenticates a user and generates access and refresh tokens.
 

@@ -2,16 +2,16 @@ from functools import lru_cache
 from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.core.config import FastApiConf, get_config
 from src.core.logger import logger
 from src.db.postgres import get_session
 from src.models.entity import Role, User, UserRoles
 from src.services.token import TokenService, get_token_service
+
+from fastapi import Depends, HTTPException
 
 
 class RoleAlreadyExistsException(HTTPException):
@@ -188,7 +188,7 @@ class RoleService:
         if access_token_decoded['sub'] != str(user_id) and not await self.is_admin(user_id=access_token_decoded['sub']):
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN,
                                 detail="You do not have permission to perform this action")
-        return await self._get_roles_by_user_id_query(user_id)
+        return await self.get_roles_by_user_id_query(user_id)
 
     async def get_roles_by_access_token(self, access_token: str) -> list[Role]:
         """
@@ -198,7 +198,7 @@ class RoleService:
          :return: A list of Role objects associated with the user.
          """
         access_token_decoded = self.token_service.decode_jwt(access_token)
-        return await self._get_roles_by_user_id_query(user_id=access_token_decoded['sub'])
+        return await self.get_roles_by_user_id_query(user_id=access_token_decoded['sub'])
 
     async def has_role(self, user_id: UUID, role_name: str) -> bool:
         """
@@ -208,7 +208,7 @@ class RoleService:
         :param role_name: The name of the role to check.
         :return: True if the user has the role, False otherwise.
         """
-        all_user_roles = await self._get_roles_by_user_id_query(user_id)
+        all_user_roles = await self.get_roles_by_user_id_query(user_id)
         return any(role.name == role_name for role in all_user_roles)
 
     async def has_roles(self, user_id: UUID, role_names: list[str]) -> bool:
@@ -219,7 +219,7 @@ class RoleService:
         :param role_names: A list of role names to check.
         :return: True if the user has any of the roles, False otherwise.
         """
-        all_user_roles = await self._get_roles_by_user_id_query(user_id)
+        all_user_roles = await self.get_roles_by_user_id_query(user_id)
         return any(role.name in role_names for role in all_user_roles)
 
     async def is_admin(self, user_id: UUID) -> bool:
@@ -231,7 +231,7 @@ class RoleService:
         """
         return await self.has_role(user_id=user_id, role_name='admin')
 
-    async def _get_roles_by_user_id_query(self, user_id: UUID) -> list[Role]:
+    async def get_roles_by_user_id_query(self, user_id: UUID) -> list[Role]:
         """
         Helper method to get roles by user ID.
 

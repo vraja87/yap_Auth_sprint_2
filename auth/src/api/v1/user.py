@@ -1,16 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Response,
-                     Security)
-from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
-                              OAuth2PasswordRequestForm)
-from starlette.requests import Request
-
 import src.api.v1.api_examples as api_examples
-from src.api.v1.models.entity import (LoginHistoryResponse, RoleNamesResponse,
-                                      TwoTokens, UserCreate, UserInDB,
-                                      UserUpdateRequest)
+from src.api.v1.models.entity import (LoginHistoryResponse, LoginResponse,
+                                      RoleNamesResponse, TwoTokens, UserCreate,
+                                      UserInDB, UserUpdateRequest)
 from src.core.logger import logger
 from src.db.cache import CacheBackend, get_cache
 from src.models.entity import User
@@ -18,6 +11,13 @@ from src.services.oauth import OAuthService, get_oauth_service
 from src.services.rate_limit import rate_limit_dependency
 from src.services.roles import RoleService, get_role_service
 from src.services.users import UserService, get_user_service
+from starlette.requests import Request
+
+from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Response,
+                     Security)
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
+                              OAuth2PasswordRequestForm)
 
 router = APIRouter()
 security = HTTPBearer()
@@ -75,7 +75,7 @@ async def create_user(user: UserCreate,
 
 @logger.catch
 @router.post('/login',
-             response_model=TwoTokens,
+             response_model=LoginResponse,
              status_code=HTTPStatus.OK,
              summary="User Login",
              description="Authenticate a user and provide access and refresh tokens.",
@@ -83,18 +83,30 @@ async def create_user(user: UserCreate,
 async def login(request: Request,
                 form_data: OAuth2PasswordRequestForm = Depends(),
                 user_service: UserService = Depends(get_user_service),
-                rate_limit=Depends(rate_limit_dependency)) -> TwoTokens:
+                role_service: RoleService = Depends(get_role_service),
+                rate_limit=Depends(rate_limit_dependency)
+                ) -> LoginResponse:
     """
     Authenticates user and returns JWT tokens.
 
     :param request: HTTP request.
     :param form_data: Login credentials.
     :param user_service: User service.
+    :param role_service: Dependency injection of the RoleService.
     :param rate_limit: A dependency that enforces rate limiting on this endpoint.
     :return: Access and refresh JWT tokens.
     """
-    access_token, refresh_token = await user_service.authenticate(form_data.username, form_data.password, request)
-    return TwoTokens(access_token=access_token, refresh_token=refresh_token)
+    access_token, refresh_token, user = await user_service.authenticate(form_data.username, form_data.password, request)
+    user_roles = await role_service.get_roles_by_user_id_query(user.id)
+    user_roles = [role.name for role in user_roles]
+    return LoginResponse(id=user.id,
+                         access_token=access_token,
+                         refresh_token=refresh_token,
+                         login=user.login,
+                         first_name=user.first_name,
+                         last_name=user.last_name,
+                         roles=user_roles
+                         )
 
 
 @router.post('/logout',
@@ -273,5 +285,5 @@ async def auth_callback(request: Request,
     :param oauth_service: Dependency injection of the OAuth service.
     :return: TwoTokens model containing the access token and refresh token.
     """
-    access_token, refresh_token = await oauth_service.authenticate(request, provider)
+    access_token, refresh_token, _ = await oauth_service.authenticate(request, provider)
     return TwoTokens(access_token=access_token, refresh_token=refresh_token)

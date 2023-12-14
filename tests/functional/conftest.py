@@ -1,7 +1,10 @@
 import asyncio
 import time
+import uuid
+from datetime import datetime, timedelta
 
 import aiohttp
+import jwt
 import pytest
 import pytest_asyncio
 from functional.settings import test_settings
@@ -34,7 +37,7 @@ async def http_session():
 
 
 @pytest_asyncio.fixture
-async def make_get_request(http_session):
+async def make_get_request(http_session, mock_auth_jwt_token):
     """
     Asynchronously make a GET request using the aiohttp client session.
 
@@ -43,10 +46,22 @@ async def make_get_request(http_session):
              and returns the response object augmented with the response time and body.
     """
     async def inner(path: str, query_data: dict | None = None):
+        headers = {"Authorization": f"Bearer {mock_auth_jwt_token}"}
         url = f'{test_settings.service_url}{path}'
         start = time.time()
-        async with http_session.get(url, params=query_data) as response:
+        async with http_session.get(url, params=query_data, headers=headers) as response:
             response.body = await response.json()
             response.response_time = time.time() - start
             return response
     return inner
+
+
+@pytest_asyncio.fixture(scope='session')
+async def mock_auth_jwt_token():
+    expire = datetime.utcnow() + timedelta(minutes=5)
+    payload = {
+        "sub": str(uuid.uuid4()),
+        "exp": expire,
+    }
+    encoded_jwt = jwt.encode(payload, test_settings.secret_key, algorithm="HS256")
+    return encoded_jwt

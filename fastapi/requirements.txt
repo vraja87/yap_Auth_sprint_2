@@ -9,3 +9,5 @@ uvicorn==0.23.2
 gunicorn==21.2.0
 uvloop==0.17.0 ; sys_platform != "win32" and implementation_name == "cpython"
 loguru==0.7.0
+
+PyJWT==2.8.0

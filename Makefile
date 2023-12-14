@@ -10,6 +10,10 @@ hard_down:
 	docker-compose down -v
 	rm -f $(FLAG_FILE)
 
+restart:
+	docker-compose down
+	docker-compose up -d --build
+
 migrate:
 	docker-compose exec admin_panel python manage.py migrate
 

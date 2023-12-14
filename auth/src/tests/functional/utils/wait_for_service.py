@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+import uuid
 
 import aiohttp
 from loguru import logger
@@ -18,7 +19,8 @@ async def wait_for_service(path: str, max_retries: int = 10, sleep_interval: flo
         while retry_count < max_retries:
             try:
                 url = f'{test_settings.service_url}{path}'
-                async with http_session.get(url) as response:
+                headers = {'X-Request-Id': str(uuid.uuid4())}
+                async with http_session.get(url, headers=headers) as response:
                     response_dict = await response.json()
                     logger.info(response)
                 if response.status == 200 and 'status' in response_dict and response_dict['status'] == 'ok':

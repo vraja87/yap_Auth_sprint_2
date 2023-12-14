@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+import uuid
 
 import aiohttp
 import pytest
@@ -9,7 +10,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.ddl import CreateTable
-
 from src.models.entity import Base
 
 from .settings import test_settings
@@ -51,6 +51,9 @@ async def make_get_request(http_session: aiohttp.ClientSession):
              and returns the response object augmented with the response time and body.
     """
     async def inner(path: str, query_data: dict | None = None, headers: dict | None = None):
+        if headers is None:
+            headers = {}
+        headers.setdefault('X-Request-Id', str(uuid.uuid4()))
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         async with http_session.get(url, params=query_data, headers=headers) as response:
@@ -71,6 +74,9 @@ async def make_post_request(http_session: aiohttp.ClientSession):
     """
     async def inner(path: str, query_data: dict | None = None, headers={"Content-Type": "application/json"},
                     is_json_data=True):
+        if headers is None:
+            headers = {}
+        headers.setdefault('X-Request-Id', str(uuid.uuid4()))
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         if is_json_data:
@@ -87,6 +93,9 @@ async def make_post_request(http_session: aiohttp.ClientSession):
 @pytest_asyncio.fixture
 async def make_post_request__form_data(http_session: aiohttp.ClientSession):
     async def inner(path: str, query_data: dict | None = None, headers=None):
+        if headers is None:
+            headers = {}
+        headers.setdefault('X-Request-Id', str(uuid.uuid4()))
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         # Transfer data as `data` to match the `application/x-www-form-urlencoded` format
@@ -100,9 +109,10 @@ async def make_post_request__form_data(http_session: aiohttp.ClientSession):
 @pytest_asyncio.fixture
 async def make_post_request_for_login(http_session: aiohttp.ClientSession):
     async def inner(path: str, query_data: dict | None = None, json_encode=True):
+        headers = {'X-Request-Id': str(uuid.uuid4())}
         url = f'{test_settings.service_url}{path}'
         start = time.time()
-        async with http_session.post(url, data=query_data) as response:
+        async with http_session.post(url, data=query_data, headers=headers) as response:
             if json_encode:
                 response.body = await response.json()
             else:
@@ -115,6 +125,9 @@ async def make_post_request_for_login(http_session: aiohttp.ClientSession):
 @pytest_asyncio.fixture
 async def make_patch_request(http_session: aiohttp.ClientSession):
     async def inner(path: str, query_data: dict | None = None, headers: dict | None = None):
+        if headers is None:
+            headers = {}
+        headers.setdefault('X-Request-Id', str(uuid.uuid4()))
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         async with http_session.patch(url, json=query_data, headers=headers) as response:
@@ -127,6 +140,9 @@ async def make_patch_request(http_session: aiohttp.ClientSession):
 @pytest_asyncio.fixture
 async def make_delete_request(http_session: aiohttp.ClientSession):
     async def inner(path: str, query_data: dict | None = None, headers=None):
+        if headers is None:
+            headers = {}
+        headers['X-Request-Id'] = str(uuid.uuid4())
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         async with http_session.delete(url, json=query_data, headers=headers) as response:

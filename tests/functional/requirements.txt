@@ -7,3 +7,5 @@ elasticsearch[async]==8.9.0
 pydantic==2.2.0
 pydantic_settings==2.0.3
 loguru==0.7.0
+
+PyJWT==2.8.0

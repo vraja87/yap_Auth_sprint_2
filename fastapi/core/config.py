@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 env_file = '.env' if os.path.exists('.env') else None
+env_auth_file = '.env_auth' if os.path.exists('.env_auth') else None
 
 
 class CacheConfBase(BaseSettings):
@@ -161,6 +162,12 @@ class FastApiConf(BaseSettings):
 
     :param name: The name of the FastAPI application.
     """
-    model_config = SettingsConfigDict(env_file=env_file, env_prefix='PROJECT_')
+    model_config = SettingsConfigDict(env_file=env_auth_file, env_prefix='PROJECT_')
 
     name: str = 'movies'
+
+    role_admin: str = 'admin'
+    role_user: str = 'authorized_user'
+    role_anonym: str = 'unauthorized_user'
+
+    secret_key: str = 'secret'

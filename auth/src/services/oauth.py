@@ -197,7 +197,7 @@ class OAuthService:
             logger.error(f"Error during redirect to OAuth provider: {e}")
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="OAuth redirect failed")
 
-    async def authenticate(self, request, provider: str):
+    async def authenticate(self, request, provider: str) -> [str, str, User]:
         """
         Authenticates the user through the OAuth provider and creates user records in the database.
 

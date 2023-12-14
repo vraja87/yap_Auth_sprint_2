@@ -4,9 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
-
 from src.core.logger import logger
+from typing_extensions import Annotated
 
 
 @logger.catch(reraise=True)
@@ -84,6 +83,14 @@ class TwoTokens(BaseModel):
                 "token_type": "bearer"
             }
         }
+
+
+class LoginResponse(TwoTokens):
+    id: UUID
+    login: str
+    first_name: str | None
+    last_name: str | None
+    roles: list[str]
 
 
 class LoginHistoryResponse(BaseModel):
