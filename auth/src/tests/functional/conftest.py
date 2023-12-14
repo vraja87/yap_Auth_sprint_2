@@ -16,8 +16,6 @@ from .settings import test_settings
 from .testdata.common_test_db_data import (get_user_roles, login_histories,
                                            roles, users_obj)
 
-# pytest_plugins = ("functional.fixtures.alchemy",)  # deprecated if not in root dir.
-
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -145,7 +143,6 @@ async def make_delete_request(http_session: aiohttp.ClientSession):
         if headers is None:
             headers = {}
         headers['X-Request-Id'] = str(uuid.uuid4())
-
         url = f'{test_settings.service_url}{path}'
         start = time.time()
         async with http_session.delete(url, json=query_data, headers=headers) as response:

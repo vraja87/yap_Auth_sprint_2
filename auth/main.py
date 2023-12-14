@@ -79,8 +79,13 @@ async def shutdown():
     scheduler.shutdown()
 
 
+from src.services.rate_limit import rate_limit_dependency
+
+from fastapi import Depends
+
+
 @app.get("/health")
-async def health_check():
+async def health_check(rate_limit=Depends(rate_limit_dependency)):
     """healthcheck for service"""
     return {"status": "ok"}
 

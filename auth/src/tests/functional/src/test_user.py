@@ -103,7 +103,7 @@ async def test_logout_success(make_post_request_for_login, make_post_request):
     login_response = await make_post_request_for_login('/api/v1/user/login', credentials)
     access_token = login_response.body['access_token']
 
-    headers = {"Authorization": f"Bearer {access_token}", }
+    headers = {"Authorization": f"Bearer {access_token}"}
     logout_response = await make_post_request('/api/v1/user/logout', headers=headers)
 
     assert logout_response.status == HTTPStatus.OK
