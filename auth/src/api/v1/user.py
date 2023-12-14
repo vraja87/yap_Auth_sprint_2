@@ -3,8 +3,8 @@ from http import HTTPStatus
 
 import src.api.v1.api_examples as api_examples
 from src.api.v1.models.entity import (LoginHistoryResponse, LoginResponse,
-                                      RoleNamesResponse, RoleResponse,
-                                      TwoTokens, UserCreate, UserInDB,
+                                      RoleNamesResponse, TwoTokens,
+                                      UserCreate, UserInDB,
                                       UserUpdateRequest)
 from src.core.logger import logger
 from src.db import cache

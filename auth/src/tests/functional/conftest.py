@@ -141,7 +141,7 @@ async def make_patch_request(http_session: aiohttp.ClientSession):
 
 @pytest_asyncio.fixture
 async def make_delete_request(http_session: aiohttp.ClientSession):
-    async def inner(path: str, query_data: dict | None = None,  headers=None):
+    async def inner(path: str, query_data: dict | None = None, headers=None):
         if headers is None:
             headers = {}
         headers['X-Request-Id'] = str(uuid.uuid4())

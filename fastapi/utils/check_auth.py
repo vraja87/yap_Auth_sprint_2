@@ -1,12 +1,9 @@
-import base64
-from datetime import datetime
 from http import HTTPStatus
 
 import aiohttp
 import jwt
 from core import config
 from core.logger import logger
-from services.cache import async_cache
 
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer

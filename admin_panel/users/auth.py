@@ -29,7 +29,7 @@ class CustomBackend(BaseBackend):
             user.is_admin = any(role_name == "admin" for role_name in data.get('roles'))
             user.is_active = True
             user.save()
-        except Exception as e:
+        except Exception:
             return None
 
         return user
