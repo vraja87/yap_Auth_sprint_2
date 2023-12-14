@@ -171,3 +171,4 @@ class FastApiConf(BaseSettings):
     role_anonym: str = 'unauthorized_user'
 
     secret_key: str = 'secret'
+    is_dev_mode: bool = True

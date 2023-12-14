@@ -83,5 +83,9 @@ async def decode_jwt_self(credentials: HTTPAuthorizationCredentials):
 
 
 async def check_has_token(credentials: HTTPAuthorizationCredentials = Security(security)):
-    # return bool(await get_auth_user_roles(credentials))
-    return bool(await decode_jwt_self(credentials))
+    """
+    For tests, we replace requests to the auth service with a simple token verification within the movies-api service
+    """
+    if fast_api_conf.is_dev_mode:
+        return bool(await decode_jwt_self(credentials))
+    return bool(await get_auth_user_roles(credentials))

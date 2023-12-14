@@ -1,6 +1,6 @@
 # Async API
 
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue.svg)](https://github.com/telemachor/Auth_sprint_1)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue.svg)](https://github.com/telemachor/Auth_sprint_2)
   
 ## Setup
   
