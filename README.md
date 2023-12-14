@@ -74,3 +74,5 @@ make test
 - **GET /api/v1/users/login-history**: Retrieves a user's login history.
 - **PATCH /api/v1/users/update**: Updates user information.
 - **GET /api/v1/users/access-roles**: Retrieves the roles of the current user.
+- **GET /login/{provider}**: Initiates the OAuth login process for a specified provider. 
+This endpoint supports authentication through various OAuth providers, including Yandex and Google.
