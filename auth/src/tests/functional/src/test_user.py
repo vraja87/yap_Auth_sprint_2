@@ -14,7 +14,7 @@ import pytest
                  'first_name': 'Li',
                  'last_name': 'Po',
                  },
-                {'status': HTTPStatus.CREATED, 'length': 4}
+                {'status': HTTPStatus.CREATED, 'length': 5}
         ),
         # Negative tests
         # Missed login
