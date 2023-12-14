@@ -2,11 +2,8 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from http import HTTPStatus
 
-from fastapi import Depends, HTTPException
 from sqlalchemy import delete, desc, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from starlette.requests import Request
-
 from src.core.config import FastApiConf, get_config
 from src.core.logger import logger
 from src.db.cache import CacheBackend, get_cache
@@ -14,6 +11,9 @@ from src.db.postgres import AsyncSession, get_session
 from src.models.entity import LoginHistory, RefreshToken, User
 from src.services.token import TokenService, get_token_service
 from src.services.utils import calculate_ttl, get_ip_address, get_user_agent
+from starlette.requests import Request
+
+from fastapi import Depends, HTTPException
 
 
 class UserAlreadyExistsException(HTTPException):

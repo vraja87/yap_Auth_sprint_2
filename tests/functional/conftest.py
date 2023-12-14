@@ -1,15 +1,13 @@
 import asyncio
 import time
 import uuid
-
-import jwt
 from datetime import datetime, timedelta
 
 import aiohttp
+import jwt
 import pytest
 import pytest_asyncio
 from functional.settings import test_settings
-
 
 pytest_plugins = ("functional.fixtures.redis", "functional.fixtures.elastic")
 

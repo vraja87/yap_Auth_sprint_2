@@ -1,9 +1,9 @@
-from http import HTTPStatus
 import uuid
+from http import HTTPStatus
 
 import requests
-from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import BaseBackend
 
 User = get_user_model()
 

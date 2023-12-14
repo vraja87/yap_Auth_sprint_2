@@ -9,9 +9,9 @@ from api.v1.models.person import PersonShortResponse
 from core import config
 from core.logger import logger
 from services.film import FilmService, get_film_service
+from utils.check_auth import check_has_token
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from utils.check_auth import check_has_token
 
 router = APIRouter()
 redis_conf = config.RedisConf()

@@ -4,9 +4,9 @@ import api.v1.api_examples as api_examples
 from api.v1.models.genre import GenreResponse
 from core.logger import logger
 from services.genre import GenreService, get_genre_service
+from utils.check_auth import check_has_token
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from utils.check_auth import check_has_token
 
 router = APIRouter()
 

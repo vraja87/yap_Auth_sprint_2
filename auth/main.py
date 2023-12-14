@@ -1,27 +1,25 @@
 import uuid
 from http import HTTPStatus
 
+import src.services.utils as utils_service
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from create_admin import create_admin
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sqlalchemy.exc import SQLAlchemyError
-
-from create_admin import create_admin
 from src.api.v1 import roles, user
 from src.core import config
 from src.core.logger import logger
 from src.db import cache
 from src.db.cache import CacheBackendFactory, CacheClientInitializer
 from src.db.postgres import create_database, db_conf
-import src.services.utils as utils_service
 from src.services.utils import TokenCleaner
+from src.utils.jaeger import configure_tracer
+from starlette.datastructures import Headers
 from starlette.requests import Request
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import ORJSONResponse
-
-from src.utils.jaeger import configure_tracer
-from starlette.datastructures import Headers
 
 fast_api_conf = config.get_config()
 

@@ -1,22 +1,23 @@
 
 from http import HTTPStatus
 
-from fastapi import (APIRouter, Depends, Form, HTTPException, Response,
-                     Security, Query)
-from fastapi.responses import JSONResponse
-from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
-                              OAuth2PasswordRequestForm)
-from starlette.requests import Request
-
 import src.api.v1.api_examples as api_examples
-from src.api.v1.models.entity import (LoginHistoryResponse, RoleNamesResponse,
-                                      RoleResponse, TwoTokens, UserCreate,
-                                      UserInDB, UserUpdateRequest, LoginResponse)
+from src.api.v1.models.entity import (LoginHistoryResponse, LoginResponse,
+                                      RoleNamesResponse, RoleResponse,
+                                      TwoTokens, UserCreate, UserInDB,
+                                      UserUpdateRequest)
 from src.core.logger import logger
 from src.db import cache
 from src.models.entity import User
 from src.services.roles import RoleService, get_role_service
 from src.services.users import UserService, get_user_service
+from starlette.requests import Request
+
+from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Response,
+                     Security)
+from fastapi.responses import JSONResponse
+from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
+                              OAuth2PasswordRequestForm)
 
 router = APIRouter()
 security = HTTPBearer()
