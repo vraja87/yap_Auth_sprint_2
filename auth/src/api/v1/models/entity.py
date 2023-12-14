@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from pydantic.functional_validators import AfterValidator
 from src.core.logger import logger
 from typing_extensions import Annotated
@@ -39,6 +39,7 @@ class UserCreate(BaseModel):
     password: Annotated[str, AfterValidator(validate_passwd)] = Field(example="SecurePassword123!")
     first_name: str | None = Field(default=None, example="Albert")
     last_name: str | None = Field(default=None, example="Einstein")
+    email: EmailStr | None = Field(default=None, example="einstein@gmail.com")
 
 
 class RoleCreate(BaseModel):
@@ -63,6 +64,7 @@ class UserInDB(BaseModel):
     login: str
     first_name: str | None
     last_name: str | None
+    email: str | None
 
     class Config:
         from_attributes = True
@@ -110,3 +112,8 @@ class RoleResponse(BaseModel):
 class AssignRoleRequest(BaseModel):
     user_id: UUID
     role_id: UUID
+
+
+class OauthData(BaseModel):
+    user_id: str
+    email: str | None

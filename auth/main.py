@@ -6,6 +6,7 @@ import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from create_admin import create_admin
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from fastapi.responses import Response
 from sqlalchemy.exc import SQLAlchemyError
 from src.api.v1 import roles, user
 from src.core import config
@@ -17,9 +18,11 @@ from src.services.utils import TokenCleaner
 from src.utils.jaeger import configure_tracer
 from starlette.datastructures import Headers
 from starlette.requests import Request
+from starlette.middleware.sessions import SessionMiddleware
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import ORJSONResponse
+
 
 fast_api_conf = config.get_config()
 
@@ -32,6 +35,7 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
+app.add_middleware(SessionMiddleware, secret_key=fast_api_conf.secret_key_session)
 
 scheduler = AsyncIOScheduler()
 
@@ -44,7 +48,7 @@ async def startup():
     Connect to Redis and config database.
     """
 
-    if fast_api_conf.is_dev_mode:  # create db with alchemy instead of alembic in dev_mode
+    if fast_api_conf.is_dev_mode:
         await create_database()
         await create_admin()
 
@@ -107,8 +111,12 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
 
 @app.middleware('http')
 async def before_request(request: Request, call_next):
-    """strictly filter out any requests that do not have a header field
-        """
+    """Middleware to enforce the presence of 'X-Request-Id' header in all incoming requests.
+
+    :param request: The incoming HTTP request instance.
+    :param call_next: The function to call the next middleware or route handler.
+    :return: An ORJSONResponse with status code 400 if 'X-Request-Id' is missing, otherwise proceeds to the next handler.
+    """
     # TODO Have troubles with requests from movies-api swagger documentation.
     request_id = request.headers.get('X-Request-Id')
     if not request_id:

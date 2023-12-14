@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from sqlalchemy import delete, or_
@@ -80,6 +81,12 @@ class TokenCleaner:
         )
         await self.db_session.execute(query)
         await self.db_session.commit()
+
+
+def generate_unique_login():
+    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+    unique_login = f"{uuid.uuid4().hex}_{timestamp}"
+    return unique_login
 
 
 token_cleaner: TokenCleaner() = None
