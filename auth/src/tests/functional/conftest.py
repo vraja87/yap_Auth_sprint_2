@@ -16,8 +16,6 @@ from .settings import test_settings
 from .testdata.common_test_db_data import (get_user_roles, login_histories,
                                            roles, users_obj)
 
-# pytest_plugins = ("functional.fixtures.alchemy",)  # deprecated if not in root dir.
-
 
 @pytest.fixture(scope="session")
 def event_loop():

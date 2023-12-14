@@ -17,6 +17,7 @@ from src.services.utils import TokenCleaner
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import ORJSONResponse
 
@@ -80,8 +81,11 @@ async def shutdown():
     scheduler.shutdown()
 
 
+from src.services.rate_limit import rate_limit_dependency
+from fastapi import Depends
+
 @app.get("/health")
-async def health_check():
+async def health_check(rate_limit=Depends(rate_limit_dependency)):
     """healthcheck for service"""
     return {"status": "ok"}
 

@@ -9,6 +9,7 @@ from src.api.v1.models.entity import (AssignRoleRequest, RoleCreate,
 from src.api.v1.user import get_token
 from src.core.logger import logger
 from src.models.entity import Role
+from src.services.rate_limit import rate_limit_dependency
 from src.services.roles import RoleService, get_role_service
 
 router = APIRouter()
@@ -61,11 +62,13 @@ async def delete_role(role_id: UUID,
             summary="List all roles",
             description="Retrieves a list of all roles.",
             responses=api_examples.list_roles)
-async def get_all_roles(role_service: RoleService = Depends(get_role_service)) -> list[RoleResponse]:
+async def get_all_roles(role_service: RoleService = Depends(get_role_service),
+                        rate_limit=Depends(rate_limit_dependency)) -> list[RoleResponse]:
     """
     Get all roles.
 
     :param role_service: Dependency injection of the RoleService.
+    :param rate_limit: A dependency that enforces rate limiting on this endpoint.
     :return: List of all roles in the system.
     """
     roles = await role_service.get_roles_all()
@@ -78,12 +81,15 @@ async def get_all_roles(role_service: RoleService = Depends(get_role_service)) -
             summary="Get a role by ID",
             description="Retrieves a role by its UUID.",
             responses=api_examples.get_role)
-async def get_role(role_id: UUID, role_service: RoleService = Depends(get_role_service)) -> RoleResponse:
+async def get_role(role_id: UUID,
+                   role_service: RoleService = Depends(get_role_service),
+                   rate_limit=Depends(rate_limit_dependency)) -> RoleResponse:
     """
     Get a role by its ID.
 
     :param role_id: UUID of the role to retrieve.
     :param role_service: Dependency injection of the RoleService.
+    :param rate_limit: A dependency that enforces rate limiting on this endpoint.
     :return: Role object if found, raises 404 if not found.
     """
     role = await role_service.get_role_by_id(role_id)
@@ -98,12 +104,15 @@ async def get_role(role_id: UUID, role_service: RoleService = Depends(get_role_s
             summary="Get a role by name",
             description="Retrieves a role by its name.",
             responses=api_examples.get_role_name)
-async def get_role_name(role_name: str, role_service: RoleService = Depends(get_role_service)) -> RoleResponse:
+async def get_role_name(role_name: str,
+                        role_service: RoleService = Depends(get_role_service),
+                        rate_limit=Depends(rate_limit_dependency)) -> RoleResponse:
     """
     Get a role by its name.
 
     :param role_name: Name of the role to retrieve.
     :param role_service: Dependency injection of the RoleService.
+    :param rate_limit: A dependency that enforces rate limiting on this endpoint.
     :return: Role object if found, raises 404 if not found.
     """
     role = await role_service.get_role_by_name(role_name)
@@ -122,13 +131,14 @@ async def get_role_name(role_name: str, role_service: RoleService = Depends(get_
 async def get_user_roles(user_id: UUID,
                          access_token: str = Depends(get_token),
                          role_service: RoleService = Depends(get_role_service),
-                         ) -> list[RoleNamesResponse]:
+                         rate_limit=Depends(rate_limit_dependency)) -> list[RoleNamesResponse]:
     """
     Get roles for a user.
 
     :param user_id: UUID of the user whose roles to retrieve.
     :param access_token: JWT access token for authorization.
     :param role_service: Dependency injection of the RoleService.
+    :param rate_limit: A dependency that enforces rate limiting on this endpoint.
     :return: List of roles assigned to the user.
     """
     user_roles = await role_service.get_roles_by_user_id(user_id, access_token)

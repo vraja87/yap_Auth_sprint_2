@@ -152,6 +152,16 @@ cache: CacheBackend | None = None
 
 async def get_cache() -> CacheBackend:
     """
-    Returns the Redis database instance.
+    Returns the Cache backend instance.
     """
     return cache
+
+
+async def get_redis_instance() -> Redis:
+    """
+    Returns the Redis database instance.
+    """
+    if isinstance(cache, RedisCache):
+        return cache.client
+    else:
+        raise TypeError("In project Redis cache backend type must be used.")
