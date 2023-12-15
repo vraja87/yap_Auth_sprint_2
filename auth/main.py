@@ -1,4 +1,3 @@
-import uuid
 from http import HTTPStatus
 
 import src.services.utils as utils_service
@@ -6,17 +5,15 @@ import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from create_admin import create_admin
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from fastapi.responses import Response
 from sqlalchemy.exc import SQLAlchemyError
 from src.api.v1 import roles, user
 from src.core import config
 from src.core.logger import logger
 from src.db import cache
 from src.db.cache import CacheBackendFactory, CacheClientInitializer
-from src.db.postgres import create_database, db_conf
+from src.db.postgres import create_database
 from src.services.utils import TokenCleaner
 from src.utils.jaeger import configure_tracer
-from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -116,7 +113,7 @@ async def before_request(request: Request, call_next):
 
     :param request: The incoming HTTP request instance.
     :param call_next: The function to call the next middleware or route handler.
-    :return: An ORJSONResponse with status code 400 if 'X-Request-Id' is missing, otherwise proceeds to the next handler.
+    :return: An ORJSONResponse with status code 400 if 'X-Request-Id' is missing, otherwise proceeds to the next handler
     """
     # TODO Have troubles with requests from movies-api swagger documentation.
     request_id = request.headers.get('X-Request-Id')
