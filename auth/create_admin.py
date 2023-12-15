@@ -1,7 +1,6 @@
 import typer
 from functools import wraps
 from asyncio import run
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.postgres import create_admin_user_if_not_exist, async_session
 from src.core import config

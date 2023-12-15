@@ -141,6 +141,7 @@ class FastApiConf(BaseSettings):
     admin_passwd: str = 'admin'
 
     is_dev_mode: bool = True
+    enable_tracer: bool = True
 
     access_token_ttl: int = 60 * 30
     refresh_token_ttl: int = 60 * 60 * 24 * 2

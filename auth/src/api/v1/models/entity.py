@@ -4,8 +4,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 from pydantic.functional_validators import AfterValidator
-from src.core.logger import logger
 from typing_extensions import Annotated
+
+from src.core.logger import logger
 
 
 @logger.catch(reraise=True)

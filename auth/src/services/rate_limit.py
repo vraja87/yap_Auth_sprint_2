@@ -2,7 +2,7 @@ import time
 from functools import lru_cache
 from http import HTTPStatus
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from redis.asyncio import Redis, RedisError
 from starlette.requests import Request

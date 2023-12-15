@@ -2,16 +2,16 @@ from functools import lru_cache
 from http import HTTPStatus
 from uuid import UUID
 
+from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.core.config import FastApiConf, get_config
 from src.core.logger import logger
 from src.db.postgres import get_session
 from src.models.entity import Role, User, UserRoles
 from src.services.token import TokenService, get_token_service
-
-from fastapi import Depends, HTTPException
 
 
 class RoleAlreadyExistsException(HTTPException):
