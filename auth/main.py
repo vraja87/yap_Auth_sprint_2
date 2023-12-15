@@ -27,7 +27,8 @@ from fastapi.responses import ORJSONResponse
 fast_api_conf = config.get_config()
 
 
-configure_tracer(fast_api_conf.jaeger.host, fast_api_conf.jaeger.port)
+if fast_api_conf.enable_tracer:
+    configure_tracer(fast_api_conf.jaeger.host, fast_api_conf.jaeger.port)
 app = FastAPI(
     title=fast_api_conf.name,
     docs_url='/api/openapi-auth',
