@@ -1,5 +1,12 @@
 from http import HTTPStatus
 
+from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Response,
+                     Security)
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
+                              OAuth2PasswordRequestForm)
+from starlette.requests import Request
+
 import src.api.v1.api_examples as api_examples
 from src.api.v1.models.entity import (LoginHistoryResponse, LoginResponse,
                                       RoleNamesResponse, TwoTokens, UserCreate,
@@ -11,13 +18,6 @@ from src.services.oauth import OAuthService, get_oauth_service
 from src.services.rate_limit import rate_limit_dependency
 from src.services.roles import RoleService, get_role_service
 from src.services.users import UserService, get_user_service
-from starlette.requests import Request
-
-from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Response,
-                     Security)
-from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
-                              OAuth2PasswordRequestForm)
 
 router = APIRouter()
 security = HTTPBearer()
